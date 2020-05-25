@@ -6,5 +6,12 @@ export class Vector3 {
         this.z = z;
     }
 
+    multiply(factor) {
+        this.x = this.x * factor;
+        this.y = this.y * factor;
+        this.z = this.z * factor;
+        return this;
+    }
+
 
 }

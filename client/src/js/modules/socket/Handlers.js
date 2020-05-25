@@ -18,9 +18,9 @@ export class Handlers {
             panner.panningModel = 'HRTF';
             panner.distanceModel = 'inverse';
             panner.refDistance = 1;
-            panner.maxDistance = 10;
+            panner.maxDistance = 20;
             panner.rolloffFactor = 1;
-            panner.coneInnerAngle = 1;
+            panner.coneInnerAngle = 360;
             panner.coneOuterAngle = 360;
             panner.coneOuterGain = 0;
 
@@ -56,17 +56,17 @@ export class Handlers {
             request.send();
 
             var listener = audioCtx.listener;
-            listener.setOrientation(0, 0, -1, 0, 1, 0);
 
             openAudioMc.socketModule.registerHandler("ClientPlayerLocationPayload", data => {
                 const x = data.x;
                 const y = data.y;
                 const z = data.z;
                 const pitch = data.pitch;
-                const yaw = data.yaw;
+                const yaw = data.yaw + 90;
 
                 let position = new Vector3(x, y, z);
-                let direction = this.calculateRotationVector(pitch, yaw);
+                let forward = this.calculateRotationVector(pitch, yaw)
+                let up = this.calculateRotationVector(pitch + 90, yaw)
 
                 console.log(forward)
 
@@ -76,9 +76,9 @@ export class Handlers {
                 listener.positionX.value = position.x;
                 listener.positionY.value = position.y;
                 listener.positionZ.value = position.z;
-                listener.upX.value = position.x;
-                listener.upY.value = position.y;
-                listener.upZ.value = position.z;
+                listener.upX.value = up.x;
+                listener.upY.value = up.y;
+                listener.upZ.value = up.z;
 
                 console.log("update loc")
             });
@@ -255,23 +255,13 @@ export class Handlers {
         return degrees * (pi / 180);
     }
 
-    calculateOffset(x, y, z, pitch, yaw, distance) {
-        let agnle = this.degreesToRadians(yaw);
-
-
-        let ofx = Math.cos(agnle);
-        let ofz = Math.sin(pitch);
-
-        return new Vector3(
-            x + (ofx * distance),
-            y,
-            z + (ofz * distance)
-        )
+    invertRotation(a) {
+        return a - 360;
     }
 
     calculateRotationVector(pitch, yaw) {
-        yaw = this.degreesToRadians(this.normalizeAngle(yaw));
-        pitch = this.degreesToRadians(this.normalizeAngle(pitch));
+        yaw = this.invertRotation(this.degreesToRadians(this.normalizeAngle(yaw)));
+        pitch = this.invertRotation(this.degreesToRadians(this.normalizeAngle(pitch)));
         return new Vector3(
             Math.cos(yaw) * Math.cos(pitch),
             Math.sin(yaw) * Math.cos(pitch),

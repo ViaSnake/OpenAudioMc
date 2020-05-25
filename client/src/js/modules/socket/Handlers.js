@@ -20,7 +20,7 @@ export class Handlers {
             panner.refDistance = 1;
             panner.maxDistance = 10;
             panner.rolloffFactor = 1;
-            panner.coneInnerAngle = 360;
+            panner.coneInnerAngle = 1;
             panner.coneOuterAngle = 360;
             panner.coneOuterGain = 0;
 
@@ -32,7 +32,7 @@ export class Handlers {
             let source = audioCtx.createBufferSource();
             let request = new XMLHttpRequest();
 
-            request.open('GET', 'https://cf-media.sndcdn.com/LHfrvAkR4OrR.128.mp3?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vTEhmcnZBa1I0T3JSLjEyOC5tcDMiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE1OTA0MjA1NTZ9fX1dfQ__&Signature=OuF5Uy8LzyJb3AP53A1gCWxd9lyOiH3yWE5DwwhQZzPiRkppYm6xpAqKxiFuH7sHIh~S4ioVTmGAwBnUdscyNQmLIbeL26h-vosYr8j8xYCIg83nfZ5Uxp3mc9zZpgR-DE7tHLFebcqSZbsTEv9uizWx26y-l6DVYSOCyM5XXgsWv0qeIix14SjS-GGOFBRtGyPThWKxNWTQeuWDIVH~MadeMjaFy11Sd6MlnGIReCKPXje4ybjsq8BIYtaeaqj1Wq4qIxqxPvwaEAKM~dgcnyKKsY65aVRx6L6MFnuyfXkpshY6io4u1Wcx0AYtGMxnOZN4oylZONmDwxTwcKGmZQ__&Key-Pair-Id=APKAI6TU7MMXM5DG6EPQ', true);
+            request.open('GET', '/a.mp3', true);
 
             request.responseType = 'arraybuffer';
 
@@ -66,8 +66,9 @@ export class Handlers {
                 const yaw = data.yaw;
 
                 let position = new Vector3(x, y, z);
-                let forward = this.calculateOffset(x, y, z, pitch + 90, yaw, 1);
-                let up = this.calculateOffset(x, y, z, 90 + pitch, yaw, 1);
+                let forward = this.calculateOffset(x, y, z, pitch, yaw, 1);
+
+                console.log(forward)
 
                 listener.forwardX.value = forward.x;
                 listener.forwardY.value = forward.y;
@@ -75,9 +76,9 @@ export class Handlers {
                 listener.positionX.value = position.x;
                 listener.positionY.value = position.y;
                 listener.positionZ.value = position.z;
-                listener.upX.value = up.x;
-                listener.upY.value = up.y;
-                listener.upZ.value = up.z;
+                listener.upX.value = position.x;
+                listener.upY.value = position.y;
+                listener.upZ.value = position.z;
 
                 console.log("update loc")
             });
@@ -255,22 +256,33 @@ export class Handlers {
     }
 
     calculateOffset(x, y, z, pitch, yaw, distance) {
-        pitch = this.degreesToRadians(pitch);
-        yaw = this.degreesToRadians(yaw);
-        let targetX = x;
-        let targetY = y;
-        let targetZ = z;
+        let agnle = this.degreesToRadians(yaw);
 
-        targetX = Math.sin(pitch) * Math.cos(yaw);
-        targetY = Math.sin(yaw) * Math.cos(pitch);
-        targetZ = Math.sin(pitch) * Math.sin(yaw);
+
+        let ofx = Math.cos(agnle);
+        let ofz = Math.sin(pitch);
 
         return new Vector3(
-            x + (targetX * distance) - 1,
-            y + (targetY * distance),
-            z + (targetZ * distance),
+            x + (ofx * distance),
+            y,
+            z + (ofz * distance)
+        )
+    }
+
+    calculateRotationVector(pitch, yaw) {
+        return new Vector3(
+            Math.cos(yaw) * Math.cos(pitch),
+            Math.sin(yaw) * Math.cos(pitch),
+            Math.sin(pitch)
         );
     }
+
+    normalizeYaw(yaw) {
+        yaw = yaw % 360;
+        if (yaw < 0) yaw += 360.0;
+        return yaw;
+    }
+
 
     convertDistanceToVolume(maxDistance, currentDistance) {
         return Math.round(((maxDistance - currentDistance) / maxDistance) * 100);

@@ -32,7 +32,7 @@ public class SpeakerHandler implements ITickableHandler {
     @Override
     public void tick() {
         // send player location update
-        Location location = player.getLocation();
+        Location location = player.getEyeLocation();
         ClientPlayerLocationPayload locationPayload = new ClientPlayerLocationPayload(
                 round(location.getX(), 1),
                 round(location.getY(), 1),

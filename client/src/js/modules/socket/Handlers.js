@@ -66,7 +66,7 @@ export class Handlers {
                 const yaw = data.yaw;
 
                 let position = new Vector3(x, y, z);
-                let forward = this.calculateOffset(x, y, z, pitch, yaw, 1);
+                let direction = this.calculateRotationVector(pitch, yaw);
 
                 console.log(forward)
 
@@ -270,6 +270,8 @@ export class Handlers {
     }
 
     calculateRotationVector(pitch, yaw) {
+        yaw = this.degreesToRadians(this.normalizeAngle(yaw));
+        pitch = this.degreesToRadians(this.normalizeAngle(pitch));
         return new Vector3(
             Math.cos(yaw) * Math.cos(pitch),
             Math.sin(yaw) * Math.cos(pitch),
@@ -277,7 +279,7 @@ export class Handlers {
         );
     }
 
-    normalizeYaw(yaw) {
+    normalizeAngle(yaw) {
         yaw = yaw % 360;
         if (yaw < 0) yaw += 360.0;
         return yaw;

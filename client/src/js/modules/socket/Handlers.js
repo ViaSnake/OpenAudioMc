@@ -62,13 +62,14 @@ export class Handlers {
                 const y = data.y;
                 const z = data.z;
                 const pitch = data.pitch;
-                const yaw = data.yaw + 90;
+                const yaw = data.yaw + 180;
 
                 let position = new Vector3(x, y, z);
                 let forward = this.calculateRotationVector(pitch, yaw)
-                let up = this.calculateRotationVector(pitch + 90, yaw)
 
                 console.log(forward)
+
+                forward.y = position.y;
 
                 listener.forwardX.value = forward.x;
                 listener.forwardY.value = forward.y;
@@ -76,9 +77,9 @@ export class Handlers {
                 listener.positionX.value = position.x;
                 listener.positionY.value = position.y;
                 listener.positionZ.value = position.z;
-                listener.upX.value = up.x;
-                listener.upY.value = up.y;
-                listener.upZ.value = up.z;
+                listener.upX.value = 0;
+                listener.upY.value = 1;
+                listener.upZ.value = 0;
 
                 console.log("update loc")
             });
@@ -260,12 +261,11 @@ export class Handlers {
     }
 
     calculateRotationVector(pitch, yaw) {
-        yaw = this.invertRotation(this.degreesToRadians(this.normalizeAngle(yaw)));
-        pitch = this.invertRotation(this.degreesToRadians(this.normalizeAngle(pitch)));
+        yaw = Math.abs(this.invertRotation(this.degreesToRadians(yaw)));
         return new Vector3(
-            Math.cos(yaw) * Math.cos(pitch),
-            Math.sin(yaw) * Math.cos(pitch),
-            Math.sin(pitch)
+            Math.cos(yaw),
+            0,
+            Math.sin(yaw)
         );
     }
 
